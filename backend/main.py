@@ -11,15 +11,15 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Allow Next.js frontend to talk to this server
+# Allow ALL origins so Vercel can talk to Railway
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Register routes
 app.include_router(predict_router, prefix="/api")
 
 @app.get("/")
