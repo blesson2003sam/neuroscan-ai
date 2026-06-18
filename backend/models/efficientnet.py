@@ -29,7 +29,7 @@ CLASS_INFO = {
     }
 }
 
-def load_model(weights_path: str = "../outputs/weights/best_model.pth"):
+def load_model(weights_path: str = "/app/outputs/weights/best_model.pth"):
     """Load our trained EfficientNet model"""
     print("Loading AI model...")
     
