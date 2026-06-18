@@ -1,0 +1,10 @@
+venv/
+__pycache__/
+*.pyc
+dataset/
+dataset_split/
+runs/
+*.cache
+node_modules/
+.next/
+frontend/.next/
