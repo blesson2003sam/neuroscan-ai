@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torchvision.models as models
+import os
 
 # These are the 4 tumor classes our model knows
 CLASS_NAMES = ["glioma", "meningioma", "notumor", "pituitary"]
@@ -31,31 +32,30 @@ CLASS_INFO = {
 
 def load_model(weights_path: str = None):
     """Load our trained EfficientNet model"""
-    import os
-    
+
     # Try multiple possible paths
     possible_paths = [
-        "/app/outputs/weights/best_model.pth",
-        "outputs/weights/best_model.pth",
-        "../outputs/weights/best_model.pth",
-        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "outputs", "weights", "best_model.pth"),
+        "/app/weights/best_model.pth",
+        "weights/best_model.pth",
+        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "weights", "best_model.pth"),
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "weights", "best_model.pth"),
     ]
-    
+
     if weights_path:
         possible_paths.insert(0, weights_path)
-    
+
     # Find which path works
     found_path = None
     for path in possible_paths:
         print(f"Trying path: {path}")
         if os.path.exists(path):
             found_path = path
-            print(f"✅ Found model at: {path}")
+            print(f"Found model at: {path}")
             break
-    
+
     if not found_path:
         raise FileNotFoundError(f"Model not found! Tried: {possible_paths}")
-    
+
     print("Loading AI model...")
     device = torch.device("cpu")
     model = models.efficientnet_b0(weights=None)
