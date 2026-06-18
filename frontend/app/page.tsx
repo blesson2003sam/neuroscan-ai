@@ -90,7 +90,7 @@ export default function Home() {
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const res = await fetch("http://localhost:8000/api/predict", {
+      const res = await fetch("https://neuroscan-ai-production-1cfe.up.railway.app/api/predict", {
         method: "POST",
         body: formData,
       });
