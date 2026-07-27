@@ -66,8 +66,6 @@ def load_model(weights_path: str = None):
     # Freeze all parameters — we only need forward/backward through
     # activations for Grad-CAM, not parameter gradients. Cuts memory
     # usage during inference on low-RAM instances.
-    for param in model.parameters():
-        param.requires_grad = False
 
     model.eval()
     print(f"Model loaded successfully from {found_path}!")
