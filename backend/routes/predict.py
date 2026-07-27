@@ -110,8 +110,9 @@ async def predict(file: UploadFile = File(...)):
     confidence = confidences[predicted_class]
 
     # ── Generate Grad-CAM ──
-    img_tensor_grad = transform(original_img_resized).unsqueeze(0)
-    cam = gradcam.generate(img_tensor_grad, predicted_idx)
+   img_tensor_grad = transform(original_img_resized).unsqueeze(0)
+img_tensor_grad.requires_grad_(True)
+cam = gradcam.generate(img_tensor_grad, predicted_idx)
 
     # Create heatmap overlay
     heatmap = cv2.applyColorMap(cam, cv2.COLORMAP_JET)
