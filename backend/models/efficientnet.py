@@ -32,7 +32,6 @@ CLASS_INFO = {
 
 def load_model(weights_path: str = None):
     """Load our trained EfficientNet model"""
-
     # Try multiple possible paths
     possible_paths = [
         "/app/weights/best_model.pth",
@@ -40,7 +39,6 @@ def load_model(weights_path: str = None):
         os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "weights", "best_model.pth"),
         os.path.join(os.path.dirname(os.path.abspath(__file__)), "weights", "best_model.pth"),
     ]
-
     if weights_path:
         possible_paths.insert(0, weights_path)
 
@@ -64,6 +62,13 @@ def load_model(weights_path: str = None):
     model.load_state_dict(
         torch.load(found_path, map_location=device)
     )
+
+    # Freeze all parameters — we only need forward/backward through
+    # activations for Grad-CAM, not parameter gradients. Cuts memory
+    # usage during inference on low-RAM instances.
+    for param in model.parameters():
+        param.requires_grad = False
+
     model.eval()
     print(f"Model loaded successfully from {found_path}!")
     return model, device
