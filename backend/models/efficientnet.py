@@ -6,26 +6,22 @@ import os
 # These are the 4 tumor classes our model knows
 CLASS_NAMES = ["glioma", "meningioma", "notumor", "pituitary"]
 
-# Class descriptions shown in the UI
+# Short, non-diagnostic labels shown in the UI.
 CLASS_INFO = {
     "glioma": {
-        "description": "Glioma is a tumor that occurs in the brain and spinal cord.",
-        "severity": "high",
+        "description": "Research-model classification: glioma.",
         "color": "#E24B4A"
     },
     "meningioma": {
-        "description": "Meningioma is a tumor that forms on membranes covering the brain.",
-        "severity": "medium",
+        "description": "Research-model classification: meningioma.",
         "color": "#534AB7"
     },
     "notumor": {
-        "description": "No tumor detected. Brain appears normal.",
-        "severity": "none",
+        "description": "Research-model classification: no tumor class.",
         "color": "#1D9E75"
     },
     "pituitary": {
-        "description": "Pituitary tumor forms in the pituitary gland at brain base.",
-        "severity": "medium",
+        "description": "Research-model classification: pituitary tumor.",
         "color": "#BA7517"
     }
 }
@@ -62,10 +58,6 @@ def load_model(weights_path: str = None):
     model.load_state_dict(
         torch.load(found_path, map_location=device)
     )
-
-    # Freeze all parameters — we only need forward/backward through
-    # activations for Grad-CAM, not parameter gradients. Cuts memory
-    # usage during inference on low-RAM instances.
 
     model.eval()
     print(f"Model loaded successfully from {found_path}!")

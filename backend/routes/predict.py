@@ -8,7 +8,7 @@ import torchvision.models as models
 import numpy as np
 import cv2
 import base64
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 from fastapi import APIRouter, File, UploadFile, HTTPException
 from io import BytesIO
 import sys
@@ -18,6 +18,8 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from models.efficientnet import load_model, CLASS_NAMES, CLASS_INFO
 
 router = APIRouter()
+MAX_UPLOAD_BYTES = 10 * 1024 * 1024
+Image.MAX_IMAGE_PIXELS = 25_000_000
 
 # Load model once when server starts
 print("Initialising model...")
@@ -82,17 +84,27 @@ async def predict(file: UploadFile = File(...)):
     - Grad-CAM heatmap images (base64)
     """
     # ── Validate file ──
-    if not file.content_type.startswith("image/"):
+    if not file.content_type or not file.content_type.startswith("image/"):
         raise HTTPException(400, "Please upload an image file")
 
-    # ── Load image ──
     contents = await file.read()
-    original_img = Image.open(BytesIO(contents)).convert("RGB")
+    if not contents:
+        raise HTTPException(400, "The uploaded file is empty")
+    if len(contents) > MAX_UPLOAD_BYTES:
+        raise HTTPException(413, "Image must be 10 MB or smaller")
+
+    try:
+        original_img = Image.open(BytesIO(contents))
+        original_img.verify()
+        original_img = Image.open(BytesIO(contents)).convert("RGB")
+    except (UnidentifiedImageError, OSError, Image.DecompressionBombError) as exc:
+        raise HTTPException(400, "The uploaded file is not a valid image") from exc
+
     original_img_resized = original_img.resize((224, 224))
     img_array = np.array(original_img_resized)
 
     # ── Preprocess ──
-    img_tensor = transform(original_img_resized).unsqueeze(0)
+    img_tensor = transform(original_img_resized).unsqueeze(0).to(device)
 
     # ── Predict ──
     with torch.no_grad():
@@ -110,7 +122,7 @@ async def predict(file: UploadFile = File(...)):
     confidence = confidences[predicted_class]
 
     # ── Generate Grad-CAM ──
-    img_tensor_grad = transform(original_img_resized).unsqueeze(0)
+    img_tensor_grad = transform(original_img_resized).unsqueeze(0).to(device)
     img_tensor_grad.requires_grad_(True)
     cam = gradcam.generate(img_tensor_grad, predicted_idx)
 
